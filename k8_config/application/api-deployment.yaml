@@ -15,7 +15,8 @@ spec:
     spec:
       containers:
       - name: api
-        image: neeraj1781/node_app  # Replace with your actual API image
+        image: neeraj1781/k8_assignment 
+        imagePullPolicy: Always
         ports:
         - containerPort: 80
         env:

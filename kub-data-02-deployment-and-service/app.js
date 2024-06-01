@@ -1,35 +1,29 @@
-const path = require('path');
-const fs = require('fs');
-
 const express = require('express');
 const bodyParser = require('body-parser');
+const db = require('./db.js');
 
 const app = express();
 
-const filePath = path.join(__dirname, 'story', 'text.txt');
-
 app.use(bodyParser.json());
+app.use(db.initializeConnectionPool());
 
-app.get('/story', (req, res) => {
-  fs.readFile(filePath, (err, data) => {
-    if (err) {
-      return res.status(500).json({ message: 'Failed to open file.' });
-    }
-    res.status(200).json({ story: data.toString() });
-  });
+app.get('/story', async (req, res) => {
+  let getStory = 'select * from story';
+  let data = await db.executeQuery({ queryString: getStory })
+  return res.status(200).json(data);
 });
 
-app.post('/story', (req, res) => {
+app.post('/story', async (req, res) => {
   const newText = req.body.text;
   if (newText.trim().length === 0) {
     return res.status(422).json({ message: 'Text must not be empty!' });
   }
-  fs.appendFile(filePath, newText + '\n', (err) => {
-    if (err) {
-      return res.status(500).json({ message: 'Storing the text failed.' });
-    }
-    res.status(201).json({ message: 'Text was stored!' });
-  });
+  let insertStory = `insert into story (text) values ('${newText}')`;
+  await db.executeQuery({ queryString: insertStory })
+
+  return res.status(201).json({ message: 'Text added!' });
 });
 
-app.listen(3000);
+app.listen(3000, () => {
+  console.log('Server started on port 3000');
+});

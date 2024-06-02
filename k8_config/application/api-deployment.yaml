@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: api
-        image: neeraj1781/k8_assignment
+        image: neeraj1781/k8_assignment:4
         imagePullPolicy: Always
         ports:
         - containerPort: 80

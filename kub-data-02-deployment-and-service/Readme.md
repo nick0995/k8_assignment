@@ -37,3 +37,6 @@ kubectl run -i --tty load-generator --rm --image=busybox /bin/sh
 
 # Inside the load-generator pod, run the following command:
 while true; do wget -q -O- http://<API_SERVICE_IP>; done
+
+kubectl get hpa api-hpa -w
+kubectl get pods -l app=api -w

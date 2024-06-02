@@ -6,10 +6,15 @@ const app = express();
 
 app.use(bodyParser.json());
 
+app.get('/', (req, res) => {
+  res.send('Hello World!');
+});
 
 app.get('/story', async (req, res) => {
   let getStory = 'select * from story';
-  let data = await db.executeQuery({ queryString: getStory })
+  let data = await db.executeQuery({ 
+    queryString: getStory, event: 'getStory', params: [] 
+  });
   return res.status(200).json(data);
 });
 
@@ -19,7 +24,7 @@ app.post('/story', async (req, res) => {
     return res.status(422).json({ message: 'Text must not be empty!' });
   }
   let insertStory = `insert into story (textName) values ('${newText}')`;
-  await db.executeQuery({ queryString: insertStory })
+  await db.executeQuery({ queryString: insertStory, event: 'insertStory', params: [] });
 
   return res.status(201).json({ message: 'Text added!' });
 });

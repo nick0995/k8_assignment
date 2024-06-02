@@ -1,7 +1,7 @@
 const mysql = require('mysql');
 
 // Read configuration from environment variables
-const dbHost = process.env.DB_HOST || 'mysql';  // default to 'mysql' (service name)
+const dbHost = process.env.DB_HOST || 'localhost';  
 const dbPort = process.env.DB_PORT || '3306';
 const dbName = process.env.DB_NAME || 'mydatabase';
 const dbUser = process.env.DB_USER || 'root';
@@ -9,14 +9,29 @@ const dbPassword = process.env.DB_PASSWORD || 'root';
 
 let connection;
 const initializeConnectionPool = async() => {
-  connection = mysql.createPool({
+  connection = mysql.createConnection({
     host: dbHost,
     port: dbPort,
     user: dbUser,
     password: dbPassword,
-    database: dbName,
     connectionLimit: 10
   });
+
+  connection.connect();
+  
+  let createDatabase = `CREATE DATABASE IF NOT EXISTS ${dbName}`;
+  await connection.query(createDatabase);
+ 
+  await connection.query(`USE ${dbName}`);
+  let createTableQuery = `CREATE TABLE IF NOT EXISTS story (
+    id int not null auto_increment,
+    textName varchar(255) not null,
+    primary key (id)
+  )`;
+  
+  await connection.query(createTableQuery);
+ 
+  let connCount = 0;
   
   // Example query
   connection.on('connection', function (conn) {
@@ -40,18 +55,9 @@ const initializeConnectionPool = async() => {
     console.log(`mysql enqueue event : ", err, " connCount: ${connCount}`);
   });
   
-  let createTableQuery = `CREATE TABLE IF NOT EXISTS story (
-    id int not null auto_increment,
-    text varchar(255) not null,
-    primary key (id)
-  );`;
-  
-  let tableRes = await connection.query(createTableQuery);
-  console.log(tableRes);
 
   return connection;
 }
-// Create a connection to the database
 
 
 const executeQuery = ({ queryString, params, event }) => {
@@ -81,9 +87,6 @@ const executeQuery = ({ queryString, params, event }) => {
       });
     });
   };
-
-  // Close the connection
-connection.end();
 
 exports.initializeConnectionPool = initializeConnectionPool;
 exports.executeQuery             = executeQuery;

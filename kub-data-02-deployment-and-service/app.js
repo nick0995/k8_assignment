@@ -5,7 +5,7 @@ const db = require('./db.js');
 const app = express();
 
 app.use(bodyParser.json());
-app.use(db.initializeConnectionPool());
+
 
 app.get('/story', async (req, res) => {
   let getStory = 'select * from story';
@@ -18,12 +18,20 @@ app.post('/story', async (req, res) => {
   if (newText.trim().length === 0) {
     return res.status(422).json({ message: 'Text must not be empty!' });
   }
-  let insertStory = `insert into story (text) values ('${newText}')`;
+  let insertStory = `insert into story (textName) values ('${newText}')`;
   await db.executeQuery({ queryString: insertStory })
 
   return res.status(201).json({ message: 'Text added!' });
 });
 
+app.get('/error', async (req, res) => {
+  process.exit(0);
+});
+
+db.initializeConnectionPool();
+
+
 app.listen(3000, () => {
+ 
   console.log('Server started on port 3000');
 });
